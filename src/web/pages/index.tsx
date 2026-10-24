@@ -139,7 +139,7 @@ function Hero() {
   const [paused, setPaused] = useState(false);
   useEffect(() => {
     if (paused) return;
-    const t = setTimeout(() => setI((v) => (v + 1) % HERO.length), 7000);
+    const t = setTimeout(() => setI((v) => (v + 1) % HERO.length), 5000);
     return () => clearTimeout(t);
   }, [i, paused]);
   const h = HERO[i];
