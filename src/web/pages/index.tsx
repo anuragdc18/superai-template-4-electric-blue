@@ -84,14 +84,19 @@ const slide = (link: string) => SLIDES.find((s) => s.link === link)!;
 
 const HERO = [
   {
-    tab: "Microsoft Certification",
-    icon: GraduationCap,
-    image: asset("/images/hero-certification.jpg"),
-    s: slide("/services/microsoft-certifications"),
-    cta: "Explore Exams",
+    tab: "All Services",
+    icon: Sparkles,
+    image: asset("/images/hero-registration.jpg"),
+    s: {
+      tag: "Business Services · 100% Online",
+      title: "Everything Your Business Needs",
+      text: "Registration, logo & branding, websites, social media, AI tools and Microsoft certifications — all in one place, handled by experts, 100% online.",
+      link: "/contact",
+    },
+    cta: "Get Free Consultation",
     chips: [
-      { big: "7", small: "Fundamentals exams" },
-      { big: "Live", small: "Online classes" },
+      { big: "7", small: "Service areas" },
+      { big: "1,000+", small: "Happy clients" },
     ],
   },
   {
@@ -116,6 +121,17 @@ const HERO = [
       { big: "Monthly", small: "Social media plans" },
     ],
   },
+  {
+    tab: "Microsoft Certification",
+    icon: GraduationCap,
+    image: asset("/images/hero-certification.jpg"),
+    s: slide("/services/microsoft-certifications"),
+    cta: "Explore Exams",
+    chips: [
+      { big: "7", small: "Fundamentals exams" },
+      { big: "Live", small: "Online classes" },
+    ],
+  },
 ];
 
 function Hero() {
@@ -137,7 +153,7 @@ function Hero() {
       <div className="container-x grid items-center gap-12 pb-16 pt-10 lg:grid-cols-[1.05fr_1fr] [&>*]:min-w-0 lg:pb-24 lg:pt-14">
         <div>
           {/* tab switcher */}
-          <div role="tablist" aria-label="Choose a topic" className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          <div role="tablist" aria-label="Choose a topic" className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
             {HERO.map((t, idx) => (
               <button
                 key={t.tab}
