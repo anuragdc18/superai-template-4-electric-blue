@@ -32,6 +32,8 @@ import { asset } from "../lib/demo";
 import { useSite } from "../queries/site";
 import { LeadForm } from "../components/lead-form";
 import { WaIcon } from "../components/header";
+import { useContent } from "../queries/content";
+import { PostCard } from "../components/content-ui";
 
 /* ───────────────────────── shared bits ───────────────────────── */
 
@@ -86,7 +88,9 @@ const HERO = [
   {
     tab: "All Services",
     icon: Sparkles,
-    image: asset("/images/hero-registration.jpg"),
+    get image() {
+      return asset("/images/hero-registration.jpg");
+    },
     s: {
       tag: "Business Services · 100% Online",
       title: "Everything Your Business Needs",
@@ -102,7 +106,9 @@ const HERO = [
   {
     tab: "Business Registration",
     icon: FileText,
-    image: asset("/images/hero-registration.jpg"),
+    get image() {
+      return asset("/images/hero-registration.jpg");
+    },
     s: slide("/services/registration"),
     cta: "Get Free Consultation",
     chips: [
@@ -113,7 +119,9 @@ const HERO = [
   {
     tab: "Website & Social",
     icon: Globe2,
-    image: asset("/images/hero-website.jpg"),
+    get image() {
+      return asset("/images/hero-website.jpg");
+    },
     s: slide("/services/website"),
     cta: "Build My Website",
     chips: [
@@ -124,7 +132,9 @@ const HERO = [
   {
     tab: "Microsoft Certification",
     icon: GraduationCap,
-    image: asset("/images/hero-certification.jpg"),
+    get image() {
+      return asset("/images/hero-certification.jpg");
+    },
     s: slide("/services/microsoft-certifications"),
     cta: "Explore Exams",
     chips: [
@@ -594,22 +604,20 @@ const WHY = [
   { icon: Headphones, title: "Real experts", text: "CA, CS and design experts guide you at every step." },
 ];
 
-const REVIEWS = [
-  { name: "Ravi K.", city: "Hyderabad", text: "My GST and company registration were done in a week. Very smooth, and they explained everything simply." },
-  { name: "Priya S.", city: "Bengaluru", text: "They designed our logo and website together. Looks very professional and customers notice it." },
-  { name: "Arjun M.", city: "Pune", text: "Our Instagram enquiries doubled in 2 months. The team posts on time every week." },
-];
 
 function TrustAndReviews() {
   const site = useSite();
+  const content = useContent();
+  const rs = content.reviewsSection;
+  const REVIEWS = rs.show ? content.reviews : [];
   const [r, setR] = useState(0);
   const [hold, setHold] = useState(false);
   useEffect(() => {
-    if (hold) return;
+    if (hold || REVIEWS.length < 2) return;
     const t = setTimeout(() => setR((v) => (v + 1) % REVIEWS.length), 6000);
     return () => clearTimeout(t);
-  }, [r, hold]);
-  const rev = REVIEWS[r];
+  }, [r, hold, REVIEWS.length]);
+  const rev = REVIEWS[r % Math.max(1, REVIEWS.length)];
 
   return (
     <section className="py-16 sm:py-24">
@@ -628,7 +636,7 @@ function TrustAndReviews() {
             ))}
           </div>
 
-          <div
+          {rev && <div
             className="glass glow-ring relative flex flex-col overflow-hidden rounded-3xl p-7 sm:p-9"
             onMouseEnter={() => setHold(true)}
             onMouseLeave={() => setHold(false)}
@@ -636,13 +644,15 @@ function TrustAndReviews() {
             <span className="pointer-events-none absolute -right-4 -top-8 font-display text-[180px] leading-none text-electric/15">”</span>
             <div className="flex items-center justify-between">
               <h3 className="text-[20px] font-semibold">What Our Clients Say</h3>
-              <span className="flex items-center gap-1.5 text-[13px] text-slate-300">
-                <Star className="h-4 w-4 fill-[#fbbf24] text-[#fbbf24]" /> 4.8 on Google
-              </span>
+              {rs.rating && (
+                <a href={rs.googleUrl || undefined} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-[13px] text-slate-300">
+                  <Star className="h-4 w-4 fill-[#fbbf24] text-[#fbbf24]" /> {rs.rating} on Google{rs.ratingCount ? ` (${rs.ratingCount})` : ""}
+                </a>
+              )}
             </div>
             <div key={r} className="rise mt-8 flex-1">
               <div className="flex gap-0.5 text-[#fbbf24]">
-                {[0, 1, 2, 3, 4].map((k) => (
+                {Array.from({ length: rev.rating }, (_, k) => k).map((k) => (
                   <Star key={k} className="h-5 w-5 fill-current" />
                 ))}
               </div>
@@ -653,14 +663,14 @@ function TrustAndReviews() {
                 </span>
                 <span>
                   <span className="block font-semibold text-white">{rev.name}</span>
-                  <span className="text-[13px]">{rev.city}</span>
+                  <span className="text-[13px]">{rev.place}</span>
                 </span>
               </figcaption>
             </div>
             <div className="mt-8 flex items-center gap-2">
               {REVIEWS.map((x, idx) => (
                 <button
-                  key={x.name}
+                  key={x.id}
                   onClick={() => setR(idx)}
                   aria-label={`Show review ${idx + 1}`}
                   className={`h-2 rounded-full transition-all ${idx === r ? "w-8 bg-cyan" : "w-2 bg-white/25 hover:bg-white/50"}`}
@@ -675,7 +685,31 @@ function TrustAndReviews() {
                 </button>
               </span>
             </div>
-          </div>
+          </div>}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────────────────── Latest blog posts ───────────────────────── */
+
+function LatestPosts() {
+  const content = useContent();
+  if (!content.blog.show || !content.posts.length) return null;
+  return (
+    <section className="pb-16 sm:pb-24">
+      <div className="container-x">
+        <SectionHead eyebrow={content.blog.title || "Blog"} title={<>Tips & <span className="glow-text">Guides</span></>} />
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {content.posts.slice(0, 3).map((p) => (
+            <PostCard key={p.id} p={p} />
+          ))}
+        </div>
+        <div className="mt-8 text-center">
+          <Link to="/blog" className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-cyan hover:gap-2.5">
+            See all articles <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </section>
@@ -684,37 +718,21 @@ function TrustAndReviews() {
 
 /* ───────────────────────── 8. FAQ by topic ───────────────────────── */
 
-const FAQ_GROUPS = [
-  {
-    tab: "General",
-    items: [
-      { q: "Do I need to visit your office?", a: "No. Everything is done online. You can share documents on WhatsApp or email." },
-      { q: "I'm not sure which registration I need. Can you help?", a: "Yes — that's what the free consultation is for. Our expert will suggest the right option for you." },
-    ],
-  },
-  {
-    tab: "Registration",
-    items: [
-      { q: "How long does GST registration take?", a: "Usually 3 to 7 working days, once we have all your documents." },
-      { q: "Can you do registration and the website together?", a: "Yes. Many clients start with registration and logo, then add a website. We offer combo prices." },
-    ],
-  },
-  {
-    tab: "Payments",
-    items: [{ q: "How do I pay?", a: "You can pay by UPI, debit/credit card or bank transfer. You get a proper GST invoice." }],
-  },
-];
 
 function FaqTabs() {
   const [g, setG] = useState(0);
   const [open, setOpen] = useState(0);
-  const group = FAQ_GROUPS[g];
+  const faqs = useContent().faqs;
+  // questions are edited in Admin → FAQs
+  const FAQ_GROUPS = [{ tab: "All questions", items: faqs }];
+  const group = FAQ_GROUPS[g] ?? FAQ_GROUPS[0];
+  if (!faqs.length) return null;
   return (
     <section className="pb-16 pt-4 sm:pb-24">
       <div className="container-x grid gap-10 lg:grid-cols-[360px_1fr] [&>*]:min-w-0">
         <div>
           <SectionHead center={false} eyebrow="FAQ" title="Common Questions" text="Still unsure? Ask our chat assistant or call us — the first consultation is free." />
-          <div role="tablist" aria-label="Question topics" className="no-scrollbar -mt-2 flex gap-2 overflow-x-auto lg:flex-col">
+          {FAQ_GROUPS.length > 1 && <div role="tablist" aria-label="Question topics" className="no-scrollbar -mt-2 flex gap-2 overflow-x-auto lg:flex-col">
             {FAQ_GROUPS.map((x, idx) => (
               <button
                 key={x.tab}
@@ -732,13 +750,13 @@ function FaqTabs() {
                 <span className={`rounded-full px-2 py-0.5 text-[12px] ${idx === g ? "bg-white/20" : "bg-white/5"}`}>{x.items.length}</span>
               </button>
             ))}
-          </div>
+          </div>}
         </div>
         <div key={g} className="space-y-3 lg:pt-2">
           {group.items.map((f, idx) => {
             const isOpen = open === idx;
             return (
-              <div key={f.q} className={`glass rounded-2xl transition ${isOpen ? "border-electric/50 shadow-[0_0_40px_-15px_rgba(47,107,255,0.9)]" : ""}`}>
+              <div key={f.id} className={`glass rounded-2xl transition ${isOpen ? "border-electric/50 shadow-[0_0_40px_-15px_rgba(47,107,255,0.9)]" : ""}`}>
                 <button
                   onClick={() => setOpen(isOpen ? -1 : idx)}
                   aria-expanded={isOpen}
@@ -851,6 +869,7 @@ export default function Index() {
       <ServiceFinder />
       <Timeline />
       <TrustAndReviews />
+      <LatestPosts />
       <FaqTabs />
       <CtaWithForm />
     </>

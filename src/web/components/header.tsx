@@ -5,6 +5,7 @@ import { ChevronDown, Clock, Mail, Menu, Minus, Phone, Plus, X, ArrowRight, Layo
 import { CATEGORIES, serviceUrl, waLink } from "../lib/site";
 import { telHref, useSite } from "../queries/site";
 import { authClient } from "../lib/auth";
+import { useExtraLinks } from "./content-ui";
 
 export function Logo({ light = false }: { light?: boolean }) {
   const site = useSite();
@@ -41,6 +42,7 @@ function WaIcon({ className = "h-4 w-4" }: { className?: string }) {
 export { WaIcon };
 
 export function Header() {
+  const extra = useExtraLinks();
   const [open, setOpen] = useState(false);
   const [acc, setAcc] = useState<string | null>("registration");
   const [scrolled, setScrolled] = useState(false);
@@ -100,7 +102,7 @@ export function Header() {
         <div className="container-x flex h-[72px] items-center gap-4">
           <Logo light />
 
-          <nav className="ml-auto hidden items-center gap-0.5 min-[1150px]:flex xl:gap-1">
+          <nav className="ml-auto hidden items-center gap-0.5 min-[1150px]:flex">
             <Link
               to="/"
               className={`rounded-lg px-2.5 py-2 text-[14px] font-medium ${loc === "/" ? "text-white shadow-[inset_0_-2px_0_var(--color-electric)]" : "text-slate-300 hover:text-white"}`}
@@ -111,7 +113,7 @@ export function Header() {
               <div key={c.slug} className="group relative">
                 <Link
                   to={`/services/${c.slug}`}
-                  className={`flex items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 text-[14px] font-medium transition xl:px-2.5 ${
+                  className={`flex items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 text-[14px] font-medium transition xl:px-2 ${
                     loc === `/services/${c.slug}` ? "text-cyan" : "text-slate-300 group-hover:text-white"
                   }`}
                 >
@@ -141,6 +143,24 @@ export function Header() {
                 </div>
               </div>
             ))}
+            {extra.length > 0 && (
+              <div className="group relative">
+                <button type="button" className={`flex items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 text-[14px] font-medium transition xl:px-2 ${extra.some((x) => loc.startsWith(x.to)) ? "text-cyan" : "text-slate-300 group-hover:text-white"}`}>
+                  More
+                  <ChevronDown className="h-4 w-4 transition group-hover:rotate-180" />
+                </button>
+                <div className="invisible absolute top-full right-0 w-[240px] translate-y-2 pt-3 opacity-0 transition duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+                  <div className="glass rounded-2xl p-2 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]">
+                    {[...extra, { to: "/contact", label: "Contact Us" }].map((x) => (
+                      <Link key={x.to} to={x.to} className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[14px] text-navy hover:bg-surface hover:text-royal">
+                        <span className="h-1.5 w-1.5 rounded-full bg-cyan/70" />
+                        {x.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </nav>
           <Link
             to="/contact"
@@ -216,6 +236,11 @@ export function Header() {
                 </div>
               );
             })}
+            {[...extra, { to: "/contact", label: "Contact Us" }].map((x) => (
+              <Link key={x.to} to={x.to} className="block border-b border-line py-3.5 font-semibold text-navy">
+                {x.label}
+              </Link>
+            ))}
             {session && (
               <Link to="/admin/dashboard" className="block py-3.5 font-semibold text-royal">
                 Owner Dashboard
